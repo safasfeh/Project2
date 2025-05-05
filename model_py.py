@@ -163,14 +163,14 @@ if submitted:
         st.error("Water does NOT meet quality standards for reuse.")
 
     # --- PDF Report Generation ---
-    from fpdf import FPDF
-    from datetime import datetime
-    import os
-    import base64
-    import streamlit as st
+from fpdf import FPDF
+from datetime import datetime
+import os
+import base64
+import streamlit as st
 
 # --- Define PDF Class First ---
-class PDF(FPDF):
+    class PDF(FPDF):
     def header(self):
         if os.path.exists("ttu_logo.png"):
             self.image("ttu_logo.png", 10, 8, 33)
