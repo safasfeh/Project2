@@ -22,6 +22,9 @@ st.markdown("""
     <li>1 -Shahad Mohammad Abushamma</li>
     <li>2 - Rahaf Ramzi Al-shakh Qasem</li>
     <li>3 - Duaa Musa Al-Khalafat</li>
+<h5 style='text-align: center; color: gray;'>supervised by Dr.Ashraf Alsafasfeh:</h5>
+<ul style='text-align: center; list-style: none; padding-left: 0;'>
+
 </ul>
 """, unsafe_allow_html=True)
 
