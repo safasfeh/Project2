@@ -67,9 +67,9 @@ with st.form("input_form"):
 
 # --- Prediction Logic ---
 if submitted:
-    input_array = np.array([[pH_raw, turbidity_raw, temperature, coagulant_dose, flocculant_dose,
+    input_array = np.array([[pH_raw, turbidity_raw, temperature,
                              fe_initial, mn_initial, cu_initial, zn_initial, ss, tds,
-                             mixing_speed, rapid_mix, slow_mix, settling_time]])
+                             ]])
 
     X_scaled = scaler_X.transform(input_array)
     y_pred_scaled = model.predict(X_scaled)
@@ -78,7 +78,7 @@ if submitted:
     # --- Build Result Table ---
     results = pd.DataFrame(columns=["Parameter", "Predicted Value", "Standard Limit", "Unit", "Assessment"])
 
-    units = ['NTU', 'mg/L', 'mg/L', 'mg/L', 'mg/L', 'mg/L', 'mg/L', '%', '%', '%']
+    units = ['NTU', 'mg/L', 'mg/L', 'mg/L', 'mg/L', 'mg/L', 'mg/L', '%', '%', '%','mg/l','mg/l','rpm','min','min','min']
     reuse_safe = True
 
     for i, var in enumerate(output_vars):
