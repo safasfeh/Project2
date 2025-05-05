@@ -1,8 +1,6 @@
 streamlit
-pillow
-joblib
 tensorflow
-fpdf
-numpy
 pandas
-scikit-learn==1.2.2
+scikit-learn
+joblib
+numpy
