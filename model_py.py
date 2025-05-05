@@ -116,7 +116,14 @@ if submitted:
         'Slow_mix_time_min': 'min',
         'Settling_time_min': 'min'
     }
-
+    # --- Create Operation Parameters Table ---
+    op_df = pd.DataFrame(columns=["Operation Parameter", "Predicted Value", "Unit"])
+    for var in operation_params_vars:
+        idx = output_vars.index(var)
+        value = y_pred[idx]
+        unit = units_dict[var]
+        op_df.loc[len(op_df)] = [var, round(value, 3), unit]
+        
     # --- Create Water Quality Table ---
     quality_df = pd.DataFrame(columns=["Parameter", "Predicted Value", "Standard Limit", "Unit", "Assessment"])
     reuse_safe = True
@@ -137,21 +144,17 @@ if submitted:
 
         quality_df.loc[len(quality_df)] = [var, round(value, 3), std_limit, unit, assessment]
 
-    # --- Create Operation Parameters Table ---
-    op_df = pd.DataFrame(columns=["Operation Parameter", "Predicted Value", "Unit"])
-    for var in operation_params_vars:
-        idx = output_vars.index(var)
-        value = y_pred[idx]
-        unit = units_dict[var]
-        op_df.loc[len(op_df)] = [var, round(value, 3), unit]
+    
 
     # --- Display Tables ---
-    st.subheader("Predicted Treated Water Quality")
-    st.dataframe(quality_df)
+
 
     st.subheader("Operation Parameters Values")
     st.dataframe(op_df)
 
+    st.subheader("Predicted Treated Water Quality")
+    st.dataframe(quality_df)
+    
     # --- Decision Message ---
     st.subheader("Reuse Decision")
     if reuse_safe:
@@ -159,12 +162,12 @@ if submitted:
     else:
         st.error("Water does NOT meet quality standards for reuse.")
 
-# --- PDF Report Generation ---
-from fpdf import FPDF
-from datetime import datetime
-import os
-import base64
-import streamlit as st
+    # --- PDF Report Generation ---
+    from fpdf import FPDF
+    from datetime import datetime
+    import os
+    import base64
+    import streamlit as st
 
 # --- Define PDF Class First ---
 class PDF(FPDF):
@@ -215,12 +218,12 @@ def create_pdf_with_logo(quality_df, op_df, reuse_safe):
 
     return pdf
 
-# --- Generate and Display Download Link ---
-pdf = create_pdf_with_logo(quality_df, op_df, reuse_safe)
-pdf.output("water_quality_report.pdf")
+    # --- Generate and Display Download Link ---
+    pdf = create_pdf_with_logo(quality_df, op_df, reuse_safe)
+    pdf.output("water_quality_report.pdf")
 
-with open("water_quality_report.pdf", "rb") as f:
-    base64_pdf = base64.b64encode(f.read()).decode("utf-8")
-
-href = f'<a href="data:application/pdf;base64,{base64_pdf}" download="water_quality_report.pdf">📥 Download Report as PDF</a>'
-st.markdown(href, unsafe_allow_html=True)
+    with open("water_quality_report.pdf", "rb") as f:
+        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+    
+    href = f'<a href="data:application/pdf;base64,{base64_pdf}" download="water_quality_report.pdf">📥 Download Report as PDF</a>'
+    st.markdown(href, unsafe_allow_html=True)
