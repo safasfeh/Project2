@@ -79,81 +79,78 @@ with st.form("input_form"):
 # --- Prediction Logic ---
 if submitted:
     input_array = np.array([[pH_raw, turbidity_raw, temperature,
-                             fe_initial, mn_initial, cu_initial, zn_initial, ss, tds,
-                             ]])
+                             fe_initial, mn_initial, cu_initial, zn_initial, ss, tds]])
 
     X_scaled = scaler_X.transform(input_array)
     y_pred_scaled = model.predict(X_scaled)
     y_pred = scaler_y.inverse_transform(y_pred_scaled)[0]
-# --- Separate Output Variables ---
-water_quality_vars = [
-    'Turbidity_final_NTU', 'Fe_final_mg_L', 'Mn_final_mg_L', 'Cu_final_mg_L',
-    'Zn_final_mg_L', 'Suspended_solids_final_mg_L', 'TDS_final_mg_L',
-    'Turbidity_removal_%', 'Suspended_solids_removal_%', 'TDS_removal_%'
-]
 
-operation_params_vars = [
-    'Coagulant_dose_mg_L', 'Flocculant_dose_mg_L', 'Mixing_speed_rpm',
-    'Rapid_mix_time_min', 'Slow_mix_time_min', 'Settling_time_min'
-]
+    # --- Separate Output Variables ---
+    water_quality_vars = [
+        'Turbidity_final_NTU', 'Fe_final_mg_L', 'Mn_final_mg_L', 'Cu_final_mg_L',
+        'Zn_final_mg_L', 'Suspended_solids_final_mg_L', 'TDS_final_mg_L',
+        'Turbidity_removal_%', 'Suspended_solids_removal_%', 'TDS_removal_%'
+    ]
 
-# Corresponding units
-units_dict = {
-    'Turbidity_final_NTU': 'NTU',
-    'Fe_final_mg_L': 'mg/L',
-    'Mn_final_mg_L': 'mg/L',
-    'Cu_final_mg_L': 'mg/L',
-    'Zn_final_mg_L': 'mg/L',
-    'Suspended_solids_final_mg_L': 'mg/L',
-    'TDS_final_mg_L': 'mg/L',
-    'Turbidity_removal_%': '%',
-    'Suspended_solids_removal_%': '%',
-    'TDS_removal_%': '%',
-    'Coagulant_dose_mg_L': 'mg/L',
-    'Flocculant_dose_mg_L': 'mg/L',
-    'Mixing_speed_rpm': 'rpm',
-    'Rapid_mix_time_min': 'min',
-    'Slow_mix_time_min': 'min',
-    'Settling_time_min': 'min'
-}
+    operation_params_vars = [
+        'Coagulant_dose_mg_L', 'Flocculant_dose_mg_L', 'Mixing_speed_rpm',
+        'Rapid_mix_time_min', 'Slow_mix_time_min', 'Settling_time_min'
+    ]
 
-# --- Create Water Quality Table ---
-quality_df = pd.DataFrame(columns=["Parameter", "Predicted Value", "Standard Limit", "Unit", "Assessment"])
-reuse_safe = True
+    # Corresponding units
+    units_dict = {
+        'Turbidity_final_NTU': 'NTU',
+        'Fe_final_mg_L': 'mg/L',
+        'Mn_final_mg_L': 'mg/L',
+        'Cu_final_mg_L': 'mg/L',
+        'Zn_final_mg_L': 'mg/L',
+        'Suspended_solids_final_mg_L': 'mg/L',
+        'TDS_final_mg_L': 'mg/L',
+        'Turbidity_removal_%': '%',
+        'Suspended_solids_removal_%': '%',
+        'TDS_removal_%': '%',
+        'Coagulant_dose_mg_L': 'mg/L',
+        'Flocculant_dose_mg_L': 'mg/L',
+        'Mixing_speed_rpm': 'rpm',
+        'Rapid_mix_time_min': 'min',
+        'Slow_mix_time_min': 'min',
+        'Settling_time_min': 'min'
+    }
 
-for var in water_quality_vars:
-    idx = output_vars.index(var)
-    value = y_pred[idx]
-    unit = units_dict[var]
-    if var in limits:
-        _, limit_val = limits[var]
-        assessment = "✅ OK" if value <= limit_val else "❌ Exceeds Limit"
-        if value > limit_val:
-            reuse_safe = False
-        std_limit = limit_val
-    else:
-        std_limit = "--"
-        assessment = "--"
+    # --- Create Water Quality Table ---
+    quality_df = pd.DataFrame(columns=["Parameter", "Predicted Value", "Standard Limit", "Unit", "Assessment"])
+    reuse_safe = True
 
-    quality_df.loc[len(quality_df)] = [var, round(value, 3), std_limit, unit, assessment]
+    for var in water_quality_vars:
+        idx = output_vars.index(var)
+        value = y_pred[idx]
+        unit = units_dict[var]
+        if var in limits:
+            _, limit_val = limits[var]
+            assessment = "✅ OK" if value <= limit_val else "❌ Exceeds Limit"
+            if value > limit_val:
+                reuse_safe = False
+            std_limit = limit_val
+        else:
+            std_limit = "--"
+            assessment = "--"
 
-# --- Create Operation Parameters Table ---
-op_df = pd.DataFrame(columns=["Operation Parameter", "Predicted Value", "Unit"])
-for var in operation_params_vars:
-    idx = output_vars.index(var)
-    value = y_pred[idx]
-    unit = units_dict[var]
-    op_df.loc[len(op_df)] = [var, round(value, 3), unit]
+        quality_df.loc[len(quality_df)] = [var, round(value, 3), std_limit, unit, assessment]
 
-# --- Display Tables ---
-st.subheader("Predicted Treated Water Quality")
-st.dataframe(quality_df)
+    # --- Create Operation Parameters Table ---
+    op_df = pd.DataFrame(columns=["Operation Parameter", "Predicted Value", "Unit"])
+    for var in operation_params_vars:
+        idx = output_vars.index(var)
+        value = y_pred[idx]
+        unit = units_dict[var]
+        op_df.loc[len(op_df)] = [var, round(value, 3), unit]
 
-st.subheader("Operation Parameters Values")
-st.dataframe(op_df)
+    # --- Display Tables ---
+    st.subheader("Predicted Treated Water Quality")
+    st.dataframe(quality_df)
 
-
-
+    st.subheader("Operation Parameters Values")
+    st.dataframe(op_df)
 
     # --- Decision Message ---
     st.subheader("Reuse Decision")
@@ -179,8 +176,8 @@ st.dataframe(op_df)
 
         return pdf
 
-    # Generate and download PDF
-    pdf = create_pdf(results, reuse_safe)
+    # Use quality_df for report
+    pdf = create_pdf(quality_df, reuse_safe)
     pdf.output("report.pdf")
 
     with open("report.pdf", "rb") as f:
