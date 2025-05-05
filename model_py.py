@@ -19,9 +19,9 @@ st.markdown("""
 <h4 style='text-align: center;'>Tafila Technical University</h4>
 <h5 style='text-align: center; color: gray;'>Designed and implemented by students:</h5>
 <ul style='text-align: center; list-style: none; padding-left: 0;'>
-    <li>1 - Duaa</li>
-    <li>2 - Shahed</li>
-    <li>3 - Rahaf</li>
+    <li>1 -Shahad Mohammad Abushamma</li>
+    <li>2 - Rahaf Ramzi Al-shakh Qasem</li>
+    <li>3 - Duaa Musa Al-Khalafat</li>
 </ul>
 """, unsafe_allow_html=True)
 
@@ -164,61 +164,29 @@ if submitted:
         st.error("Water does NOT meet quality standards for reuse.")
 
 # --- PDF Report Generation ---
-    class PDF(FPDF):
-        def header(self):
-            if os.path.exists("ttu_logo.png"):
-                self.image("ttu_logo.png", 10, 8, 33)
-            self.set_font("Arial", "B", 14)
-            self.cell(0, 10, "Water Quality Prediction Report", ln=True, align="C")
-            self.set_font("Arial", "", 10)
-            self.cell(0, 10, f"Date: {datetime.now().strftime('%Y-%m-%d')}", ln=True, align="C")
-            self.ln(10)
-    
-        def watermark(self):
-            if os.path.exists("water_logo.png"):
-                # Background image as light watermark
-                self.image("water_bg.png", x=35, y=60, w=140, h=140)
+def create_pdf(df, reuse_safe):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, "Water Quality Prediction Report", ln=True, align='C')
 
-# --- Create PDF with Tables ---
-    def create_pdf_with_logo(quality_df, op_df, reuse_safe):
-        pdf = PDF()
-        pdf.add_page()
-        pdf.set_font("Arial", "", 12)
-        pdf.watermark()
-    
-        # Table 1: Water Quality
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 10, "Treated Water Quality", ln=True)
-        pdf.set_font("Arial", "", 10)
-        for _, row in quality_df.iterrows():
-            text = f"{row['Parameter']}: {row['Predicted Value']} {row['Unit']} (Standard: {row['Standard Limit']}) --> {str(row['Assessment']).replace('✅', 'OK').replace('❌', 'Exceeds')}"
-            pdf.multi_cell(0, 8, text)
-    
-        pdf.ln(5)
-    
-        # Table 2: Operation Parameters
-        pdf.set_font("Arial", "B", 12)
-        pdf.cell(0, 10, "Operational Parameters", ln=True)
-        pdf.set_font("Arial", "", 10)
-        for _, row in op_df.iterrows():
-            text = f"{row['Operation Parameter']}: {row['Predicted Value']} {row['Unit']}"
-            pdf.cell(0, 8, text, ln=True)
-    
-        pdf.ln(10)
-    
-        # Decision Message
-        pdf.set_font("Arial", "B", 12)
-        decision = "✅ Water is safe for reuse or discharge." if reuse_safe else "❌ Water does NOT meet quality standards for reuse."
-        decision = decision.replace("✅", "OK").replace("❌", "Exceeds")
-        pdf.multi_cell(0, 10, f"Final Decision:\n{decision}")
-    
-        return pdf
+    pdf.ln(10)
+    for index, row in df.iterrows():
+        # Ensure only ASCII characters are used in strings
+        assessment_text = row['Assessment'].replace("✅", "OK").replace("❌", "Exceeds") if isinstance(row['Assessment'], str) else row['Assessment']
+        pdf.cell(200, 10, f"{row['Parameter']}: {row['Predicted Value']} {row['Unit']} (Standard: {row['Standard Limit']}) --> {assessment_text}", ln=True)
 
-    # --- Generate and Display Download Link ---
-    pdf = create_pdf_with_logo(quality_df, op_df, reuse_safe)
-    pdf.output("water_quality_report.pdf")
+    pdf.ln(10)
+    decision_text = "Water is safe for reuse or discharge." if reuse_safe else "Water does NOT meet reuse standards."
+    pdf.multi_cell(0, 10, f"Final Decision:\n{decision_text}")
+
+    return pdf
+
+# Generate and download PDF
+    pdf = create_pdf(quality_df, reuse_safe)
+    pdf.output("report.pdf")
     
-    with open("water_quality_report.pdf", "rb") as f:
+    with open("report.pdf", "rb") as f:
         base64_pdf = base64.b64encode(f.read()).decode("utf-8")
     
     href = f'<a href="data:application/pdf;base64,{base64_pdf}" download="water_quality_report.pdf">📥 Download Report as PDF</a>'
