@@ -181,49 +181,46 @@ class PDF(FPDF):
         self.ln(10)
 
     def watermark(self):
-        if os.path.exists("water_bg.png"):
+        if os.path.exists("water_logo.png"):
             self.image("water_bg.png", x=35, y=60, w=140, h=140)
 
-# --- PDF Creation Function ---
-def create_pdf_with_logo(quality_df, op_df, reuse_safe):
+    def create_pdf_with_logo(quality_df, op_df, reuse_safe):
     pdf = PDF()
     pdf.add_page()
     pdf.set_font("Arial", "", 12)
     pdf.watermark()
 
-    # Table 1
+    # Water Quality Section
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "Treated Water Quality", ln=True)
     pdf.set_font("Arial", "", 10)
     for _, row in quality_df.iterrows():
-        text = f"{row['Parameter']}: {row['Predicted Value']} {row['Unit']} (Standard: {row['Standard Limit']}) --> {str(row['Assessment']).replace('✅', 'OK').replace('❌', 'Exceeds')}"
+        if pdf.get_y() > 260:  # adjust threshold as needed
+            pdf.add_page()
+            pdf.watermark()
+        assessment = str(row['Assessment']).replace('✅', 'OK').replace('❌', 'Exceeds')
+        text = f"{row['Parameter']}: {row['Predicted Value']} {row['Unit']} (Standard: {row['Standard Limit']}) --> {assessment}"
         pdf.multi_cell(0, 8, text)
 
+    # Operational Parameters Section
     pdf.ln(5)
-
-    # Table 2
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "Operational Parameters", ln=True)
     pdf.set_font("Arial", "", 10)
     for _, row in op_df.iterrows():
+        if pdf.get_y() > 260:
+            pdf.add_page()
+            pdf.watermark()
         text = f"{row['Operation Parameter']}: {row['Predicted Value']} {row['Unit']}"
         pdf.cell(0, 8, text, ln=True)
 
+    # Final Decision Section
     pdf.ln(10)
-
-    # Final Decision
+    if pdf.get_y() > 260:
+        pdf.add_page()
+        pdf.watermark()
     pdf.set_font("Arial", "B", 12)
     decision = "✅ Water is safe for reuse or discharge." if reuse_safe else "❌ Water does NOT meet quality standards for reuse."
     pdf.multi_cell(0, 10, f"Final Decision:\n{decision.replace('✅', 'OK').replace('❌', 'Exceeds')}")
 
     return pdf
-
-    # --- Generate and Display Download Link ---
-    pdf = create_pdf_with_logo(quality_df, op_df, reuse_safe)
-    pdf.output("water_quality_report.pdf")
-
-    with open("water_quality_report.pdf", "rb") as f:
-        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
-    
-    href = f'<a href="data:application/pdf;base64,{base64_pdf}" download="water_quality_report.pdf">📥 Download Report as PDF</a>'
-    st.markdown(href, unsafe_allow_html=True)
