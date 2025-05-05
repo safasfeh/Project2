@@ -167,27 +167,27 @@ if submitted:
         st.error("Water does NOT meet quality standards for reuse.")
 
 # --- PDF Report Generation ---
-def create_pdf(df, reuse_safe):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, "Water Quality Prediction Report", ln=True, align='C')
-
-    pdf.ln(10)
-    for index, row in df.iterrows():
-        # Ensure only ASCII characters are used in strings
-        assessment_text = row['Assessment'].replace("✅", "OK").replace("❌", "Exceeds") if isinstance(row['Assessment'], str) else row['Assessment']
-        pdf.cell(200, 10, f"{row['Parameter']}: {row['Predicted Value']} {row['Unit']} (Standard: {row['Standard Limit']}) --> {assessment_text}", ln=True)
-
-    pdf.ln(10)
-    decision_text = "Water is safe for reuse or discharge." if reuse_safe else "Water does NOT meet reuse standards."
-    pdf.multi_cell(0, 10, f"Final Decision:\n{decision_text}")
-
-    return pdf
-
-# Generate and download PDF
-    pdf = create_pdf(quality_df, reuse_safe)
-    pdf.output("report.pdf")
+    def create_pdf(df, reuse_safe):
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, "Water Quality Prediction Report", ln=True, align='C')
+    
+        pdf.ln(10)
+        for index, row in df.iterrows():
+            # Ensure only ASCII characters are used in strings
+            assessment_text = row['Assessment'].replace("✅", "OK").replace("❌", "Exceeds") if isinstance(row['Assessment'], str) else row['Assessment']
+            pdf.cell(200, 10, f"{row['Parameter']}: {row['Predicted Value']} {row['Unit']} (Standard: {row['Standard Limit']}) --> {assessment_text}", ln=True)
+    
+        pdf.ln(10)
+        decision_text = "Water is safe for reuse or discharge." if reuse_safe else "Water does NOT meet reuse standards."
+        pdf.multi_cell(0, 10, f"Final Decision:\n{decision_text}")
+    
+        return pdf
+    
+    # Generate and download PDF
+        pdf = create_pdf(quality_df, reuse_safe)
+        pdf.output("report.pdf")
     
     with open("report.pdf", "rb") as f:
         base64_pdf = base64.b64encode(f.read()).decode("utf-8")
