@@ -54,13 +54,13 @@ output_vars = [
 ]
 
 limits = {
-    'Turbidity_final_NTU': (0.0, 5.0),
-    'Fe_final_mg_L': (0.0, 0.3),
-    'Mn_final_mg_L': (0.0, 0.1),
-    'Cu_final_mg_L': (0.0, 1.0),
-    'Zn_final_mg_L': (0.0, 5.0),
-    'Suspended_solids_final_mg_L': (0.0, 50.0),
-    'TDS_final_mg_L': (0.0, 1000.0)
+    'Turbidity_final_NTU': {'op': '<=', 'value': 5.0},
+    'Fe_final_mg_L': {'op': '<=', 'value': 0.3},
+    'Mn_final_mg_L': {'op': '<=', 'value': 0.1},
+    'Cu_final_mg_L': {'op': '<=', 'value': 1.0},
+    'Zn_final_mg_L': {'op': '<=', 'value': 5.0},
+    'Suspended_solids_final_mg_L': {'op': '<=', 'value': 50.0},
+    'TDS_final_mg_L': {'op': '>', 'value': 1000.0}  
 }
 
 # --- Title & Form ---
