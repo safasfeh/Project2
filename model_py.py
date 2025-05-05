@@ -170,7 +170,7 @@ import base64
 import streamlit as st
 
 # --- Define PDF Class First ---
-    class PDF(FPDF):
+class PDF(FPDF):
     def header(self):
         if os.path.exists("ttu_logo.png"):
             self.image("ttu_logo.png", 10, 8, 33)
