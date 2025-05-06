@@ -132,28 +132,39 @@ if submitted:
     quality_df = pd.DataFrame(columns=["Parameter", "Predicted Value", "Standard Limit", "Unit", "Assessment"])
     reuse_safe = True
 
-    for var in water_quality_vars:
-        idx = output_vars.index(var)
-        value = y_pred[idx]
-        unit = units_dict[var]
+  for var in water_quality_vars:
+    idx = output_vars.index(var)
+    value = y_pred[idx]
+    unit = units_dict[var]
+    
+    if var in limits:
+        limit = limits[var]
+        op = limit['op']
+        limit_val = limit['value']
         
-        if var in limits:
-            _, limit_val = limits[var]
+        if op == "<=":
             assessment = "✅ OK" if value <= limit_val else "❌ Exceeds Limit"
             if value > limit_val:
                 reuse_safe = False
-            std_limit = limit_val
+        elif op == ">":
+            assessment = "✅ OK" if value > limit_val else "❌ Below Limit"
+            if value <= limit_val:
+                reuse_safe = False
         else:
-            std_limit = "--"
             assessment = "--"
+        
+        std_limit = limit_val
+    else:
+        std_limit = "--"
+        assessment = "--"
     
-        quality_df.loc[len(quality_df)] = [
-            var,
-            round(value, 3),
-            std_limit,
-            unit,
-            assessment
-        ]
+    quality_df.loc[len(quality_df)] = [
+        var,
+        round(value, 3),
+        std_limit,
+        unit,
+        assessment
+    ]
 
     
 
