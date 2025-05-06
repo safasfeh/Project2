@@ -133,20 +133,31 @@ if submitted:
     reuse_safe = True
 
     for var in water_quality_vars:
-        idx = output_vars.index(var)
-        value = y_pred[idx]
-        unit = units_dict[var]
-        if var in limits:
-            _, limit_val = limits[var]
-            assessment = "✅ OK" if value <= limit_val else "❌ Exceeds Limit"
-            if value > limit_val:
+    idx = output_vars.index(var)
+    value = y_pred[idx]
+    unit = units_dict[var]
+    
+    # Default values
+    std_limit = "--"
+    assessment = "--"
+
+    if var in limits:
+        _, limit_val = limits[var]
+
+        try:
+            # Ensure both are floats for comparison
+            value_float = float(value)
+            limit_float = float(limit_val)
+            assessment = "✅ OK" if value_float <= limit_float else "❌ Exceeds Limit"
+            if value_float > limit_float:
                 reuse_safe = False
             std_limit = limit_val
-        else:
-            std_limit = "--"
-            assessment = "--"
+            value = value_float  # ensure numeric for rounding
+        except (ValueError, TypeError):
+            assessment = "⚠️ Invalid input"
+    
+    quality_df.loc[len(quality_df)] = [var, round(value, 3) if isinstance(value, (int, float)) else value, std_limit, unit, assessment]
 
-        quality_df.loc[len(quality_df)] = [var, round(value, 3), std_limit, unit, assessment]
 
     
 
