@@ -132,10 +132,12 @@ if submitted:
     quality_df = pd.DataFrame(columns=["Parameter", "Predicted Value", "Standard Limit", "Unit", "Assessment"])
     reuse_safe = True
 
-  for var in water_quality_vars:
+for var in water_quality_vars:
     idx = output_vars.index(var)
     value = y_pred[idx]
     unit = units_dict[var]
+    
+    print(f"Checking limit for {var}...")  # Debugging line
     
     if var in limits:
         limit = limits[var]
@@ -155,6 +157,7 @@ if submitted:
         
         std_limit = limit_val
     else:
+        print(f"Warning: {var} not found in limits")  # Debugging line
         std_limit = "--"
         assessment = "--"
     
@@ -165,6 +168,7 @@ if submitted:
         unit,
         assessment
     ]
+
 
     
 
