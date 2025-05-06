@@ -138,7 +138,7 @@ if submitted:
         unit = units_dict[var]
         
         if var in limits:
-            _, limit_val = limits[var]
+            std_text, limit_val = limits[var]
             assessment = "✅ OK" if value <= limit_val else "❌ Exceeds Limit"
             if value > limit_val:
                 reuse_safe = False
